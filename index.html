@@ -49,7 +49,7 @@
         
         
         
-        <div align="center" id="loadingText"><h2>Please Wait...<br />Loading Data Directly From Ethereum Network<br />This may take a bit...</h2><br /></div>
+        <div align="center" id="loadingText"><h2>Please Wait...<br />Loading Data Directly From Ethereum Network<br />This may take a bit...</h2><br />If it does not load check the console log for errors or try a different node below</div>
         
         
           <div class="panel panel-info" id="benefactorpanel" style="display:none;">
@@ -117,6 +117,7 @@
 
     var numberOfBenefactors = 0;
     var nextToUpdate = 0;
+    var address = [];
 
 function connect() {
     if (typeof web3 === 'undefined') {
@@ -129,20 +130,22 @@ function connect() {
 
     window.ethContract = web3.eth.contract(abi).at($("#contract-address").val());
     
-    numberOfBenefactors = ethContract.benefactor(0)[1].e;
     nextToUpdate = 0;
-
-    update();
     
-    $('#loadingText').hide();
-    $('#benefactorpanel').show();
+    console.log(ethContract);
+    console.log(ethContract.benefactor().length);
+
+    updateBenefactors();
 
 }
 
 
 function update() {
 
-	i = nextToUpdate;
+	numberOfBenefactors = address.length;
+	console.log("number of benefactors: "+numberOfBenefactors);
+	
+	for (i = 0; i < numberOfBenefactors - 1; i++) {
     nextpayout = 1 / numberOfBenefactors
     htmlToInsert = "";
 	thispayout = 0;
@@ -152,9 +155,8 @@ function update() {
 		thispayout = thispayout + (1 / dividedby);
 	}
 
-	benefactor = ethContract.benefactor(i)[0];
-	console.log(benefactor);
-	address[i]=benefactor;
+	benefactor = address[i];
+		
 	htmlToInsert += '<tr id="addressLine' + benefactor + '" class="bounceInUp animated"><td>' + (i + 1) + '</td><td><div class="addressIdenticon-' + benefactor + '" style="width:30px;height:30px;float:left;border-radius: 50%;box-shadow: inset 0 2px 2px hsla(0,0%,100%,.5),inset 0 -1px 8px rgba(0,0,0,.6);"></div> &nbsp; <a href="https://etherscan.io/address/' + benefactor + '#internaltx" target="_blank" style="font-size:14pt;">' + benefactor + '</a></td><td>' + nextpayout + ' ETH</td><td>' + thispayout + ' ETH</td></tr>';
 
     $('#nextPayout').append(htmlToInsert);
@@ -166,11 +168,28 @@ function update() {
 	}).toDataURL() + ')');
 	
 
-
-	nextToUpdate++;
+	}
 	
-	if(i < numberOfBenefactors-2){
-		updateAgain = setTimeout(update, 1);
+	    
+    $('#loadingText').hide();
+    $('#benefactorpanel').show();
+
+}
+
+function updateBenefactors() {
+
+	i = nextToUpdate;
+
+	benefactor = ethContract.benefactor(i)[0];
+	console.log(benefactor);
+	address[i]=benefactor;
+
+	if(benefactor!="0x"){
+	
+	nextToUpdate++;
+	updateAgain = setTimeout(updateBenefactors, 1);
+	}else{
+	update();
 	}
 	
 }
