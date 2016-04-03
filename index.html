@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ETH Wealth Redistribution Experiment</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.6/darkly/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+    <style>
+	    body {
+			padding-top: 128px;
+		}
+	</style>
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand">
+            ETH Wealth Redistribution Experiment
+          </a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="https://etherscan.io/address/0x3325439082FF8ba7371DFdAa1AF297bBfcAc21b2#code" target="_blank"><strong>View Contract Source Code</strong></a></li>
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+    <div class="container">  
+    
+      <div class="row">        
+        <div class="col-md-12">
+        
+        
+        <div align="center">Please keep in mind this contract is for educational and entertainment purposes only and was created to understand the limitations of Ethereum contracts.<br /><br />
+        <strong>To Participate In The Experiment, Send 1 ETH To: <h2 style="color:#0ce3ac;"><span id="address">0x3325439082FF8ba7371DFdAa1AF297bBfcAc21b2</span></h2></strong></div><br /><br />
+        
+        
+        
+        <div align="center" id="loadingText"><h2>Please Wait...<br />Loading Data Directly From Ethereum Network<br />This may take a bit...</h2><br /></div>
+        
+        
+          <div class="panel panel-info" id="benefactorpanel" style="display:none;">
+            <!-- Default panel contents -->
+            <div class="panel-heading">
+              Experiment Benefactors
+            </div>
+            <table class="table table-striped">
+              <thead>
+                <th>#</th>
+                <th>Address</th>
+                <th>Next Payout</th>
+                <th>Total Received</th>
+              </thead>
+              <tbody id="nextPayout"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="clearfix"></div>
+	  </div>    
+    
+    <hr>
+    
+        <div class="panel panel-default">
+          <div class="panel-heading clearfix">
+            Connection To Ethereum Network
+          </div>
+          <div class="panel-body clearfix">
+            <div class="form-group col-md-6">
+              <label for="ethereum-node">Node</label>
+              <input type="text" class="form-control" id="ethereum-node" placeholder="Node" value="http://dev.ethereumwall.com:28545">
+            </div>
+            <div class="form-group col-md-6">
+              <label for="contract-address">Contract Address</label>
+              <input type="text" class="form-control" id="contract-address" placeholder="Contract-address" value="0x3325439082FF8ba7371DFdAa1AF297bBfcAc21b2">
+            </div>
+            <div class="form-group col-md-12">
+              <button type="button" class="btn btn-default" id="connect" onclick="connect()">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="modalLabel"></h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min.js"></script>
+    <script src="https://www.myetherwallet.com/js/etherwallet-static.min.js"></script>
+    <script src="http://ethereumwall.com/assets/js/web3.min.js"></script>
+	<script>
+
+    var numberOfBenefactors = 0;
+    var nextToUpdate = 0;
+
+function connect() {
+    if (typeof web3 === 'undefined') {
+        window.web3 = new Web3();
+    }
+
+    web3.setProvider(new web3.providers.HttpProvider($("#ethereum-node").val()));
+
+    abi = JSON.parse('[{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"benefactor","outputs":[{"name":"etherAddress","type":"address"},{"name":"amount","type":"uint256"}],"type":"function"},{"constant":true,"inputs":[],"name":"totalBalance","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":true,"inputs":[],"name":"balance","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[],"name":"enter","outputs":[],"type":"function"}]');
+
+    window.ethContract = web3.eth.contract(abi).at($("#contract-address").val());
+    
+    numberOfBenefactors = ethContract.benefactor(0)[1].e;
+    nextToUpdate = 0;
+
+    update();
+    
+    $('#loadingText').hide();
+    $('#benefactorpanel').show();
+
+}
+
+
+function update() {
+
+	i = nextToUpdate;
+    nextpayout = 1 / numberOfBenefactors
+    htmlToInsert = "";
+	thispayout = 0;
+
+    for (j = i; j < numberOfBenefactors - 2; j++) {
+		dividedby = j + 1
+		thispayout = thispayout + (1 / dividedby);
+	}
+
+	benefactor = ethContract.benefactor(i)[0];
+	console.log(benefactor);
+	address[i]=benefactor;
+	htmlToInsert += '<tr id="addressLine' + benefactor + '" class="bounceInUp animated"><td>' + (i + 1) + '</td><td><div class="addressIdenticon-' + benefactor + '" style="width:30px;height:30px;float:left;border-radius: 50%;box-shadow: inset 0 2px 2px hsla(0,0%,100%,.5),inset 0 -1px 8px rgba(0,0,0,.6);"></div> &nbsp; <a href="https://etherscan.io/address/' + benefactor + '#internaltx" target="_blank" style="font-size:14pt;">' + benefactor + '</a></td><td>' + nextpayout + ' ETH</td><td>' + thispayout + ' ETH</td></tr>';
+
+    $('#nextPayout').append(htmlToInsert);
+    
+    $(".addressIdenticon-" + address[i]).css("background-image", 'url(' + blockies.create({
+			seed: address[i].toLowerCase(),
+			size: 8,
+			scale: 8
+	}).toDataURL() + ')');
+	
+
+
+	nextToUpdate++;
+	
+	if(i < numberOfBenefactors-2){
+		updateAgain = setTimeout(update, 1);
+	}
+	
+}
+
+//Auto Connect
+updateContractData = setTimeout(connect, 1);
+
+
+</script>
+  
+  
+  
+  </body>
+</html>
