@@ -303,10 +303,7 @@ function update() {
 	console.log("number of benefactors in queue: "+numberOfBenefactors);
 	
 	console.log("number of benefactors total: "+numberOfBenefactors+payoutIndex);
-	
-	
-	$("#totalparticipants").text(numberOfBenefactors+payoutIndex);
-	
+		
 	$("#nextparticipant").text(((amount[payoutIndex]/10000) - contractBalance) + " ETH");
 	
     console.log(address);
@@ -314,7 +311,7 @@ function update() {
     console.log(payoutIndex);
     
 	
-	for (i =payoutIndex; i < numberOfBenefactors; i++) {
+	for (i=payoutIndex; i < numberOfBenefactors; i++) {
 
 
     console.log(">>>");
@@ -339,6 +336,7 @@ function update() {
 	    
     $("#needed4payout-" + i).html((depositsbeforepayout/10000)+" ETH");
 	$("#totalqueue").text((depositsbeforepayout/10000)+" ETH");
+	$("#totalparticipants").text(i+1);
 	
 	}
 	
